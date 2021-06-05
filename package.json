@@ -1,0 +1,44 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "test": "jest"
+  },
+  "author": "Pedro Giampietro",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "axios": "^0.21.1",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "js-sha1": "^0.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "mariadb": "^2.5.3",
+    "moment": "^2.29.1",
+    "multer": "^1.4.2",
+    "mysql2": "^2.2.5",
+    "nodemailer": "^6.6.1",
+    "nodemailer-express-handlebars": "^4.0.0",
+    "nodemon": "^2.0.4",
+    "notp": "^2.0.3",
+    "pagarme": "^4.14.0",
+    "sequelize": "^6.3.0",
+    "thirty-two": "^1.0.2",
+    "uuidv4": "^6.2.6"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^26.6.3",
+    "sequelize-cli": "^6.2.0",
+    "supertest": "^6.0.1"
+  }
+}
