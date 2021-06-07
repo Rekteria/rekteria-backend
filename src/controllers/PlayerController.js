@@ -5,6 +5,7 @@ const {
   accounts,
   player_items,
   player_storage,
+  players_online,
 } = require('../models');
 const { validateCreateCharacter } = require('../validators/player');
 const { getMessage } = require('../helpers/messages');
@@ -116,6 +117,23 @@ router.get('/character/:name', async (req, res) => {
           'unjustified',
           'is_player',
         ],
+        include: [
+          {
+            model: players,
+            attributes: ['name'],
+          },
+        ],
+      },
+      { model: players_online },
+    ],
+  });
+
+  const getPlayerVictims = await player_deaths.findAll({
+    where: { killed_by: name },
+    include: [
+      {
+        model: players,
+        attributes: ['name'],
       },
     ],
   });
@@ -135,6 +153,7 @@ router.get('/character/:name', async (req, res) => {
       where: {
         account_id: searchCharacter.rows[0].account_id,
       },
+      include: [{ model: players_online }],
     });
   }
 
@@ -149,11 +168,12 @@ router.get('/character/:name', async (req, res) => {
     ...searchCharacter,
     characterList: getCharacterList,
     achievements: getAllAchievement,
+    playerVictims: getPlayerVictims,
   });
 });
 
 router.get('/highscores', async (req, res) => {
-  const { vocation, page } = req.query;
+  const { vocation, page, skill } = req.query;
 
   let filterVocation = Number(vocation);
   let highscoresPlayer;
@@ -167,8 +187,8 @@ router.get('/highscores', async (req, res) => {
       offset: offset,
 
       order: [
-        ['level', 'DESC'],
-        ['name', 'ASC'],
+        [`${skill}`, 'desc'],
+        ['name', 'desc'],
       ],
     });
   } else {
@@ -180,7 +200,7 @@ router.get('/highscores', async (req, res) => {
       limit,
       offset: offset,
       order: [
-        ['level', 'DESC'],
+        [`${skill}`, 'desc'],
         ['name', 'ASC'],
       ],
     });

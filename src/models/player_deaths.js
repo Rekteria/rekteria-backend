@@ -20,10 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       killed_by: {
         type: DataTypes.STRING,
         allowNull: false,
-        reference: {
-          model: 'players',
-          key: 'id',
-        },
       },
       is_player: {
         type: DataTypes.INTEGER,
