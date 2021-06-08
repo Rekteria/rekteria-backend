@@ -12,6 +12,7 @@ const pagarmeController = require('./controllers/PagarmeController');
 const postBackController = require('./controllers/PostBackController');
 const paymentHistoryController = require('./controllers/PaymentHistoryController');
 const playerDeathsController = require('./controllers/PlayerDeathsController');
+const characterBazarController = require('./controllers/CharacterBazarController');
 
 const response = require('./middlewares/response');
 const loginService = require('./login');
@@ -39,6 +40,7 @@ app.use('/pagarme', pagarmeController);
 app.use('/postback', postBackController);
 app.use('/paymentHistory', paymentHistoryController);
 app.use('/deaths', playerDeathsController);
+app.use('/characterBazar', characterBazarController);
 
 app.get('/', (req, res) => {
   checkConnection('rekteria.net', 7171).then(
