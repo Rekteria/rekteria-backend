@@ -1,5 +1,11 @@
 const express = require('express');
-const { account_character_sale, players, accounts } = require('../models');
+const {
+  account_character_sale,
+  account_character_sale_history,
+  players,
+  accounts,
+  player_items,
+} = require('../models');
 const { checkJwt } = require('../middlewares/jwt');
 const { getMessage } = require('../helpers/messages');
 const moment = require('moment');
@@ -55,6 +61,7 @@ router.post('/sellchar', checkJwt, async (req, res) => {
   const createCharacterSale = await account_character_sale.create({
     id_account: account_id,
     id_player: checkPlayerExists.id,
+    name: characterName,
     status: 0,
     price_type: 0,
     price_coins: priceInCoins,
@@ -70,6 +77,138 @@ router.post('/sellchar', checkJwt, async (req, res) => {
   });
 
   return res.jsonOK(createCharacterSale);
+});
+
+router.get('/getSellCharacters', checkJwt, async (req, res) => {
+  const { account_id } = req;
+
+  const charsOnTheSalesList = await account_character_sale.findAll({
+    where: {
+      id_account: account_id,
+    },
+  });
+
+  return res.jsonOK(charsOnTheSalesList);
+});
+
+router.post('/backToOldAccount', checkJwt, async (req, res) => {
+  const { account_id, body } = req;
+  const { name, id_account, id_player } = body;
+
+  const getPlayer = await players.findOne({
+    where: {
+      name: name,
+    },
+  });
+
+  if (!getPlayer)
+    return res.jsonUnauthorized(null, getMessage('You dont have permission.'));
+
+  await getPlayer.update({
+    account_id: account_id,
+  });
+
+  const charsOnTheSalesList = await account_character_sale.findOne({
+    where: {
+      id_account: id_account,
+      id_player: id_player,
+      name: name,
+    },
+  });
+
+  charsOnTheSalesList.destroy();
+
+  return res.jsonOK();
+});
+
+router.get('/getBazarOffers', checkJwt, async (req, res) => {
+  const getAllOfers = await account_character_sale.findAll({
+    include: [
+      {
+        model: players,
+        attributes: ['name', 'level', 'vocation', 'sex'],
+        include: [
+          {
+            model: player_items,
+          },
+        ],
+      },
+    ],
+  });
+
+  return res.jsonOK(getAllOfers);
+});
+
+router.post('/buyCharacterOffer', checkJwt, async (req, res) => {
+  const { account_id, body } = req;
+  const { id_account, id_player, name, price_coins, dta_insert } = body;
+
+  const getCoinsInAccount = await accounts.findOne({
+    where: {
+      id: account_id,
+    },
+  });
+
+  if (!getCoinsInAccount)
+    return res.jsonUnauthorized(
+      null,
+      getMessage(
+        'There was a problem with your refresh token, please re-login your account and try again.'
+      )
+    );
+
+  if (getCoinsInAccount.coins < price_coins)
+    return res.jsonBadRequest(
+      null,
+      getMessage(
+        'You dont have the necessary coins to buy this character, make a donation.'
+      )
+    );
+
+  const getCharacterToBuy = await players.findOne({
+    where: { name: name, id: id_player },
+  });
+
+  if (!getCharacterToBuy)
+    return res.jsonBadRequest(
+      null,
+      getMessage(
+        'The character you are trying to buy is not for sale or not found.'
+      )
+    );
+
+  await getCharacterToBuy.update({
+    account_id: account_id,
+  });
+
+  await getCoinsInAccount.update({
+    coins: getCoinsInAccount.coins - price_coins,
+  });
+
+  const charsOnTheSalesList = await account_character_sale.findOne({
+    where: {
+      id_account: id_account,
+      id_player: id_player,
+      name: name,
+    },
+  });
+
+  charsOnTheSalesList.destroy();
+
+  const createHistoryOffer = await account_character_sale_history.create({
+    id_old_account: account_id,
+    id_player: id_player,
+    id_new_account: account_id,
+    name: name,
+    status: 1,
+    price_type: 0,
+    price: price_coins,
+    char_id: id_player,
+    dta_insert: moment(dta_insert).format('YYYY-MM-DD HH:m:s'),
+    dta_sale: moment().format('YYYY-MM-DD HH:m:s'),
+  });
+
+  return res.jsonOK(createHistoryOffer);
 });
 
 module.exports = router;

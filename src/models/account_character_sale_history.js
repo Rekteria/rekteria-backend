@@ -1,8 +1,8 @@
 module.exports = (sequelize, DataTypes) => {
-  const account_character_sale = sequelize.define(
-    'account_character_sale',
+  const account_character_sale_history = sequelize.define(
+    'account_character_sale_history',
     {
-      id_account: {
+      id_old_account: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -14,51 +14,45 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id',
         },
       },
+      id_new_account: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       name: {
         type: DataTypes.STRING,
         allowNull: false,
-      },
-      status: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: 0,
       },
       price_type: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: 0,
       },
-      price_coins: {
+      price: {
         type: DataTypes.INTEGER,
         allowNull: false,
-      },
-      price_gold: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      description: {
-        type: DataTypes.STRING,
       },
       dta_insert: {
         type: DataTypes.DATE,
         allowNull: false,
       },
-      dta_valid: {
+      dta_sale: {
         type: DataTypes.DATE,
         allowNull: false,
       },
-      dta_sale: {
-        type: DataTypes.DATE,
+      extornada: {
+        type: DataTypes.BOOLEAN,
+
+        defaultValue: null,
       },
     },
     { freezeTableName: true, timestamps: false }
   );
 
-  account_character_sale.associate = (models) => {
-    account_character_sale.belongsTo(models.players, {
+  account_character_sale_history.associate = (models) => {
+    account_character_sale_history.belongsTo(models.players, {
       foreignKey: 'id_player',
     });
   };
 
-  return account_character_sale;
+  return account_character_sale_history;
 };
