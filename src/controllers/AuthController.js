@@ -5,6 +5,7 @@ const fs = require('fs');
 const { promisify } = require('util');
 const path = require('path');
 const moment = require('moment');
+const { v4: uuidv4 } = require('uuid');
 
 const mailer = require('../services/mailer');
 
@@ -440,6 +441,27 @@ router.get('/getAccount', checkJwt, async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+router.post('/generateRk', checkJwt, async (req, res) => {
+  const { account_id, body } = req;
+  const { password } = body;
+  const generateRK = uuidv4();
+
+  const encryptedPassword = encrypt(password);
+
+  const getAccount = await accounts.findOne({
+    where: { id: account_id, password: encryptedPassword },
+  });
+
+  if (!getAccount)
+    return res.jsonBadRequest(null, getMessage('account.signin.failed'));
+
+  await getAccount.update({
+    key: generateRK,
+  });
+
+  return res.jsonOK(getAccount);
 });
 
 module.exports = router;
